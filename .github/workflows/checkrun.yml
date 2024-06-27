@@ -21,8 +21,8 @@ jobs:
     steps:
       - name: 'Checkout code'
         uses: actions/checkout@v4
-        with:
-          ref: refs/pull/${{ github.event.issue.number }}/head
+        # with:
+        #   ref: refs/pull/${{ github.event.issue.number }}/head
 
       - name: Create check run
         id: create-check-run
