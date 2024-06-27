@@ -12,9 +12,6 @@ jobs:
     if: contains(github.event.comment.html_url, '/pull/') && (contains(github.event.comment.body, 'test please') || contains(github.event.comment.body, 'please test') || contains(github.event.comment.body, 'execute tests'))
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.TESTS_PROJECT_DIR }}
 
     steps:
       - name: 'Checkout code'
