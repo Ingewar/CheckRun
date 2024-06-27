@@ -1,0 +1,97 @@
+name: Check Run
+
+on:
+  issue_comment:                                     
+    types: [created, edited]
+
+env:
+  BUILD_URL: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+
+jobs:
+  e2e-tests:
+    if: contains(github.event.comment.html_url, '/pull/') && (contains(github.event.comment.body, 'test please') || contains(github.event.comment.body, 'please test') || contains(github.event.comment.body, 'execute tests'))
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.TESTS_PROJECT_DIR }}
+
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+
+      - name: Add comment response
+        uses: actions/github-script@v7
+        env:
+          BUILD_URL: ${{ env.BUILD_URL }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const commentResponse = `Starting run for this PR. Please wait... [Build Details](${process.env.BUILD_URL})`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentResponse
+            })
+
+      - name: Create check run
+        id: create-check-run
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: checkRun } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Check Run',
+              head_sha: context.sha,
+              status: 'in_progress',
+            });
+            return checkRun.id;
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install yarn
+        id: install-yarn
+        run: npm install -g yarn
+
+      - name: Add finish comment
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          BUILD_URL: ${{ env.BUILD_URL }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const commentResponse = `Run finished. [Build Details](${process.env.BUILD_URL})`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentResponse
+            })
+
+      - name: Update check run
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const conclusion = "${{ steps.install-yarn.outcome }}" == 'success' ? 'success' : 'failure';
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: "${{ steps.create-check-run.outputs.result }}",
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: 'Check Run',
+                summary: 'This is a summary of the check run.',
+                text: 'This is more detailed information about the check run.'
+              }
+            });
