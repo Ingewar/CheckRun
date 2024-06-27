@@ -12,9 +12,9 @@ jobs:
     if: contains(github.event.comment.html_url, '/pull/') && (contains(github.event.comment.body, 'test please') || contains(github.event.comment.body, 'please test') || contains(github.event.comment.body, 'execute tests'))
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    permissions:
-      checks: write   # Permission to create a Check Run
-      contents: write # Permission to write a repository_dispatch requests
+    permissions: write-all
+      #checks: write   # Permission to create a Check Run
+      #contents: write # Permission to write a repository_dispatch requests
 
     steps:
       - name: 'Checkout code'
@@ -32,7 +32,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               name: 'Check Run',
-              head_sha: 7c8b0c82c3247b18f8b5f21c44609bd176efd2fc,
+              head_sha: ${{ github.event.pull_request.head.sha }},
               status: 'in_progress',
             });
             return checkRun.id;
