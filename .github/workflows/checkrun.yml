@@ -34,7 +34,7 @@ jobs:
             const { data: checkRun } = await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              name: 'Check Run',
+              name: 'Custom Check Run',
               head_sha: context.sha,
               status: 'in_progress',
             });
@@ -62,7 +62,7 @@ jobs:
               status: 'completed',
               conclusion: conclusion,
               output: {
-                title: 'Check Run',
+                title: 'Custom Check Run',
                 summary: 'This is a summary of the check run.',
                 text: 'This is more detailed information about the check run.'
               }
