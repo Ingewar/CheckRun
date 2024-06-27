@@ -12,9 +12,9 @@ jobs:
     if: contains(github.event.comment.html_url, '/pull/') && (contains(github.event.comment.body, 'test please') || contains(github.event.comment.body, 'please test') || contains(github.event.comment.body, 'execute tests'))
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    permissions: write-all
-      #checks: write   # Permission to create a Check Run
-      #contents: write # Permission to write a repository_dispatch requests
+    permissions:
+      checks: write   # Permission to create a Check Run
+      contents: write # Permission to write a repository_dispatch requests
 
     steps:
       - name: 'Checkout code'
@@ -28,11 +28,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            console.log(${{ github.event.pull_request.head.sha }});
             const { data: checkRun } = await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               name: 'Check Run',
-              head_sha: ${{ github.event.pull_request.head.sha }},
+              head_sha: context.sha,
               status: 'in_progress',
             });
             return checkRun.id;
