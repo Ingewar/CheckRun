@@ -37,20 +37,20 @@ jobs:
       #         body: commentResponse
       #       })
 
-      - name: Create check run
-        id: create-check-run
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: checkRun } = await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'Check Run',
-              head_sha: context.sha,
-              status: 'in_progress',
-            });
-            return checkRun.id;
+      # - name: Create check run
+      #   id: create-check-run
+      #   uses: actions/github-script@v7
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const { data: checkRun } = await github.rest.checks.create({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         name: 'Check Run',
+      #         head_sha: context.sha,
+      #         status: 'in_progress',
+      #       });
+      #       return checkRun.id;
 
       - uses: actions/setup-node@v4
         with:
@@ -76,22 +76,40 @@ jobs:
       #         body: commentResponse
       #       })
 
-      - name: Update check run
-        if: always()
-        uses: actions/github-script@v7
+      # - name: Update check run
+      #   if: always()
+      #   uses: actions/github-script@v7
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const conclusion = "${{ steps.install-yarn.outcome }}" == 'success' ? 'success' : 'failure';
+      #       await github.rest.checks.update({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         check_run_id: "${{ steps.create-check-run.outputs.result }}",
+      #         status: 'completed',
+      #         conclusion: conclusion,
+      #         output: {
+      #           title: 'Check Run',
+      #           summary: 'This is a summary of the check run.',
+      #           text: 'This is more detailed information about the check run.'
+      #         }
+      #       });
+
+      - name: Report tests check
+        uses: actions/github-script@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const conclusion = "${{ steps.install-yarn.outcome }}" == 'success' ? 'success' : 'failure';
-            await github.rest.checks.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              check_run_id: "${{ steps.create-check-run.outputs.result }}",
+            github.checks.create({
+              name: 'run tests',
+              head_sha: '${{ github.event.issue.pull_request.head.sha }}',
               status: 'completed',
-              conclusion: conclusion,
+              conclusion: '${{ steps.install-yarn.outcome }}',
               output: {
-                title: 'Check Run',
-                summary: 'This is a summary of the check run.',
-                text: 'This is more detailed information about the check run.'
-              }
-            });
+                title: 'Run tests',
+                summary: 'Results: ${{ steps.install-yarn.outcome }}'
+              },
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
