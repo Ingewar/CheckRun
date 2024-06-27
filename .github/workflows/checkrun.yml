@@ -1,4 +1,4 @@
-name: Check Run
+name: Check Run workflow
 
 on:
   issue_comment:                                     
@@ -8,7 +8,7 @@ env:
   BUILD_URL: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
 
 jobs:
-  e2e-tests:
+  adding-check-run:
     if: contains(github.event.comment.html_url, '/pull/') && (contains(github.event.comment.body, 'test please') || contains(github.event.comment.body, 'please test') || contains(github.event.comment.body, 'execute tests'))
     timeout-minutes: 60
     runs-on: ubuntu-latest
