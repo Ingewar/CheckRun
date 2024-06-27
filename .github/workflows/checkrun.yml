@@ -11,6 +11,7 @@ env:
 
 jobs:
   adding-check-run:
+    if: contains(github.event.issue.labels.*.name, 'test')
     # if: contains(github.event.comment.html_url, '/pull/') && (contains(github.event.comment.body, 'test please') || contains(github.event.comment.body, 'please test') || contains(github.event.comment.body, '/test'))
     timeout-minutes: 5
     runs-on: ubuntu-latest
