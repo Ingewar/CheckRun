@@ -32,7 +32,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               name: 'Check Run',
-              head_sha: ${{ github.event.pull_request.head.sha }},
+              head_sha: 7c8b0c82c3247b18f8b5f21c44609bd176efd2fc,
               status: 'in_progress',
             });
             return checkRun.id;
