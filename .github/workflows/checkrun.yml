@@ -6,6 +6,7 @@ on:
 
 env:
   BUILD_URL: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
   adding-check-run:
